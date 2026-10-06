@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: ppe-safety-monitor
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --workers 1 --threads 4 --timeout 120 web:app
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
+      - key: ROBOFLOW_API_KEY
+        sync: false
+      - key: ROBOFLOW_WORKSPACE
+        sync: false
+      - key: PERSON_WORKFLOW_ID
+        sync: false
+      - key: PPE_WORKFLOW_ID
+        sync: false
+      - key: ROBOFLOW_ONLY
+        value: "false"
+      - key: RAPIDAPI_KEY
+        sync: false
+      - key: RAPIDAPI_PHONE_VALIDATION_URL
+        sync: false
+      - key: RAPIDAPI_PHONE_VALIDATION_HOST
+        sync: false
+      - key: RAPIDAPI_ALERT_URL
+        sync: false
+      - key: RAPIDAPI_ALERT_HOST
+        sync: false
+      - key: SUPERVISOR_PHONE
+        sync: false
+      - key: CONFIDENCE_THRESHOLD
+        value: "0.4"
+      - key: ALERT_COOLDOWN_SECONDS
+        value: "15"
+      - key: INFERENCE_WIDTH
+        value: "640"
+      - key: APP_USERNAME
+        sync: false
+      - key: APP_PASSWORD
+        sync: false
