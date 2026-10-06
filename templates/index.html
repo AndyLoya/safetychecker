@@ -3,72 +3,72 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#111a24">
-    <title>PPE Safety Monitor</title>
+    <meta name="theme-color" content="#11140d">
+    <title>PPE Safety Arcade</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="{{ url_for('static', filename='app.js') }}" defer></script>
   </head>
   <body>
     <main class="page">
       <header class="topbar">
-        <div class="brand-mark" aria-hidden="true">P</div>
+        <div class="brand-mark" aria-hidden="true">PF</div>
         <div>
-          <p class="eyebrow">WORKPLACE SAFETY</p>
-          <h1>PPE Safety Monitor</h1>
+          <p class="eyebrow">ROBOT FLOW // SAFETY SYSTEM</p>
+          <h1>PPE Safety Arcade</h1>
         </div>
         <div class="connection"><span id="connection-dot"></span><span id="connection-label">Connecting</span></div>
       </header>
 
       <section class="intro">
         <div>
-          <p class="eyebrow">LIVE CHECK-IN</p>
-          <h2>Safety starts before entry.</h2>
-          <p class="intro-copy">Stand in the center of the camera view. The monitor checks for a helmet and face mask.</p>
+          <p class="eyebrow">PLAYER 01 // LIVE CHECK-IN</p>
+          <h2>Ready player one?</h2>
+          <p class="intro-copy">Step into the screen to start your PPE check. Helmet and face mask required to pass.</p>
         </div>
-        <div class="requirement"><span aria-hidden="true">✓</span> Helmet <span class="divider">+</span> Face mask</div>
+        <div class="requirement"><span aria-hidden="true">[1]</span> HELMET <span class="divider">+</span> FACE MASK</div>
       </section>
 
       <section class="monitor-layout" aria-label="PPE monitoring station">
         <div class="camera-card">
           <div class="camera-heading">
-            <div><span class="live-dot"></span> CAMERA VIEW</div>
-            <span id="camera-label">Camera off</span>
+            <div><span class="live-dot"></span> PLAYER CAM // 01</div>
+            <span id="camera-label">CAMERA OFF</span>
           </div>
           <div class="media-stage">
             <video id="camera" autoplay playsinline muted></video>
             <canvas id="overlay" aria-hidden="true"></canvas>
             <div id="camera-placeholder" class="camera-placeholder">
-              <div class="camera-icon" aria-hidden="true">◎</div>
-              <strong>Your camera is ready</strong>
-              <span>Allow camera access to begin the PPE check.</span>
+              <div class="camera-icon" aria-hidden="true">[ + ]</div>
+              <strong>INSERT PLAYER</strong>
+              <span>PRESS START AND ALLOW CAMERA ACCESS</span>
             </div>
-            <div class="scan-guide" aria-hidden="true"><span>STAND OR SIT IN THIS AREA</span></div>
+            <div class="scan-guide" aria-hidden="true"><span>PLAYER ZONE</span></div>
           </div>
           <div class="camera-actions">
-            <button id="start-button" class="button primary" type="button">Start camera</button>
-            <button id="stop-button" class="button secondary" type="button" disabled>Stop</button>
+            <button id="start-button" class="button primary" type="button">▶ START GAME</button>
+            <button id="stop-button" class="button secondary" type="button" disabled>■ STOP</button>
             <p id="camera-message" role="status">Camera permission is requested only after you start.</p>
           </div>
         </div>
 
         <aside class="status-card" aria-live="polite">
-          <p class="eyebrow">CHECK-IN RESULT</p>
+          <p class="eyebrow">MISSION CONTROL // 01</p>
           <div id="result-icon" class="result-icon waiting" aria-hidden="true">•</div>
-          <h2 id="result-status">NEXT PERSON - READY</h2>
+          <h2 id="result-status">NEXT PLAYER - READY</h2>
           <p id="result-message" class="result-message">Start the camera and step into the marked area.</p>
           <div class="stats">
-            <div><span class="stat-value" id="passed-count">0</span><span class="stat-label">Passed</span></div>
-            <div><span class="stat-value" id="failed-count">0</span><span class="stat-label">Not passed</span></div>
+            <div><span class="stat-value" id="passed-count">0</span><span class="stat-label">Players cleared</span></div>
+            <div><span class="stat-value" id="failed-count">0</span><span class="stat-label">Try again</span></div>
           </div>
           <div class="missed-item">
-            <span class="stat-label">MOST MISSED</span>
+            <span class="stat-label">POWER-UP NEEDED</span>
             <strong id="most-missed">None yet</strong>
           </div>
           <p id="error-message" class="error-message" hidden></p>
         </aside>
       </section>
 
-      <footer>Automated PPE screening is an aid and does not replace required safety procedures.</footer>
+      <footer>INSERT HELMET + FACE MASK TO CONTINUE <span aria-hidden="true">///</span> Automated PPE screening is an aid and does not replace required safety procedures.</footer>
     </main>
   </body>
 </html>

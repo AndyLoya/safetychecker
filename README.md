@@ -1,13 +1,13 @@
-# PPE Safety Monitor
+# PPE Safety Arcade
 
-The monitor checks a browser camera feed for people wearing a helmet and face mask. Frames are sent to Roboflow for inference. When Roboflow-only mode is disabled, the app validates the supervisor phone number on startup and sends violation alerts using the configured RapidAPI endpoints.
+The retro arcade-style monitor checks a browser camera feed for people wearing a helmet and face mask, with check-in results and counters displayed alongside the camera. Frames are sent to Roboflow for inference. When Roboflow-only mode is disabled, the app validates the supervisor phone number on startup and sends violation alerts using the configured RapidAPI endpoints.
 
 ## Deploy on Render
 
 1. Push this project to a GitHub repository.
 2. In Render, choose **New +** → **Blueprint**, then select the repository containing `render.yaml`.
 3. Enter the requested environment values, including a unique `APP_USERNAME` and strong `APP_PASSWORD`. Render keeps values marked `sync: false` out of source control.
-4. Use the generated `onrender.com` HTTPS URL. Open it in a supported browser and select **Start camera**; allow camera access when prompted.
+4. Use the generated `onrender.com` HTTPS URL. Open it in a supported browser and select **START GAME**; allow camera access when prompted.
 
 Render starts the Flask app with Gunicorn and checks `/healthz`. The app expects one active check-in station: its counters and inference state live in the web process, so keep the Render service to one instance and one Gunicorn worker.
 
