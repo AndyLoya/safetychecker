@@ -7,6 +7,7 @@ from typing import Any
 import cv2
 import numpy as np
 from flask import Flask, Response, jsonify, render_template, request
+from werkzeug.exceptions import RequestEntityTooLarge
 
 from main import InferenceWorker, load_config, load_env_file
 
@@ -67,17 +68,31 @@ def create_app() -> Flask:
 
     @app.post("/api/frame")
     def submit_frame() -> tuple[Any, int]:
-        image_bytes = request.get_data(cache=False)
-        if not image_bytes:
-            return jsonify({"error": "The request body must contain a JPEG frame."}), 400
+        try:
+            image_bytes = request.get_data(cache=False)
+            if not image_bytes:
+                LOGGER.warning("Rejected empty frame request.")
+                return (
+                    jsonify({"error": "The request body must contain a JPEG frame."}),
+                    400,
+                )
 
-        frame_data = np.frombuffer(image_bytes, dtype=np.uint8)
-        frame = cv2.imdecode(frame_data, cv2.IMREAD_COLOR)
-        if frame is None:
-            return jsonify({"error": "The request body is not a valid image."}), 400
+            frame_data = np.frombuffer(image_bytes, dtype=np.uint8)
+            frame = cv2.imdecode(frame_data, cv2.IMREAD_COLOR)
+            if frame is None:
+                LOGGER.warning(
+                    "Rejected frame request containing an invalid image (%d bytes).",
+                    len(image_bytes),
+                )
+                return jsonify({"error": "The request body is not a valid image."}), 400
 
-        worker.submit_frame(frame)
-        return jsonify({"accepted": True}), 202
+            worker.submit_frame(frame)
+            return jsonify({"accepted": True}), 202
+        except RequestEntityTooLarge:
+            raise
+        except Exception:
+            LOGGER.exception("Failed to process incoming frame request.")
+            return jsonify({"error": "The frame could not be processed."}), 500
 
     @app.get("/api/status")
     def get_status() -> tuple[Any, int]:

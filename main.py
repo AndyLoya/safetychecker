@@ -640,8 +640,8 @@ class InferenceWorker:
                         )
                     self._phase = "NEXT"
                     self._error = None
-            except (requests.RequestException, ValueError, RuntimeError) as exc:
-                LOGGER.error("Background inference failed: %s", exc)
+            except Exception as exc:
+                LOGGER.exception("Background inference failed.")
                 with self._lock:
                     self._error = str(exc)
                     if self._phase == "SCANNING":
