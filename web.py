@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 from flask import Flask, Response, jsonify, render_template, request
 
-from main import InferenceWorker, load_config, load_env_file, phone_is_valid
+from main import InferenceWorker, load_config, load_env_file
 
 
 LOGGER = logging.getLogger("ppe_monitor.web")
@@ -21,11 +21,6 @@ def create_app() -> Flask:
     )
     load_env_file()
     config = load_config()
-    if not config.roboflow_only:
-        LOGGER.info("Validating supervisor phone with RapidAPI...")
-        if not phone_is_valid(config):
-            raise ValueError("Supervisor phone number did not pass RapidAPI validation.")
-        LOGGER.info("Supervisor phone validated.")
 
     app_username = os.getenv("APP_USERNAME", "")
     app_password = os.getenv("APP_PASSWORD", "")

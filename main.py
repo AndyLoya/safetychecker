@@ -28,17 +28,9 @@ class Config:
     roboflow_workspace: str
     person_workflow_id: str
     ppe_workflow_id: str
-    roboflow_only: bool
-    rapidapi_key: str
-    validation_url: str
-    validation_host: str
-    alert_url: str
-    alert_host: str
-    supervisor_phone: str
     camera_index: int
     inference_width: int
     confidence_threshold: float
-    alert_cooldown_seconds: float
 
 
 @dataclass(frozen=True)
@@ -72,28 +64,12 @@ def load_env_file(path: Path = Path(".env")) -> None:
 
 
 def load_config() -> Config:
-    roboflow_required = (
+    required = (
         "ROBOFLOW_API_KEY",
         "ROBOFLOW_WORKSPACE",
         "PERSON_WORKFLOW_ID",
         "PPE_WORKFLOW_ID",
     )
-    roboflow_only_value = os.getenv("ROBOFLOW_ONLY", "false").strip().lower()
-    if roboflow_only_value not in {"true", "false"}:
-        raise ValueError("ROBOFLOW_ONLY must be either true or false.")
-    roboflow_only = roboflow_only_value == "true"
-    required = list(roboflow_required)
-    if not roboflow_only:
-        required.extend(
-            (
-                "RAPIDAPI_KEY",
-                "RAPIDAPI_PHONE_VALIDATION_URL",
-                "RAPIDAPI_PHONE_VALIDATION_HOST",
-                "RAPIDAPI_ALERT_URL",
-                "RAPIDAPI_ALERT_HOST",
-                "SUPERVISOR_PHONE",
-            )
-        )
     missing = [name for name in required if not os.getenv(name)]
     if missing:
         raise ValueError(
@@ -103,12 +79,9 @@ def load_config() -> Config:
         )
 
     threshold = float(os.getenv("CONFIDENCE_THRESHOLD", "0.4"))
-    cooldown = float(os.getenv("ALERT_COOLDOWN_SECONDS", "15"))
     inference_width = int(os.getenv("INFERENCE_WIDTH", "640"))
     if not 0 <= threshold <= 1:
         raise ValueError("CONFIDENCE_THRESHOLD must be between 0 and 1.")
-    if cooldown < 0:
-        raise ValueError("ALERT_COOLDOWN_SECONDS cannot be negative.")
     if inference_width < 1:
         raise ValueError("INFERENCE_WIDTH must be a positive integer.")
 
@@ -117,60 +90,9 @@ def load_config() -> Config:
         roboflow_workspace=os.environ["ROBOFLOW_WORKSPACE"],
         person_workflow_id=os.environ["PERSON_WORKFLOW_ID"],
         ppe_workflow_id=os.environ["PPE_WORKFLOW_ID"],
-        roboflow_only=roboflow_only,
-        rapidapi_key=os.getenv("RAPIDAPI_KEY", ""),
-        validation_url=os.getenv("RAPIDAPI_PHONE_VALIDATION_URL", ""),
-        validation_host=os.getenv("RAPIDAPI_PHONE_VALIDATION_HOST", ""),
-        alert_url=os.getenv("RAPIDAPI_ALERT_URL", ""),
-        alert_host=os.getenv("RAPIDAPI_ALERT_HOST", ""),
-        supervisor_phone=os.getenv("SUPERVISOR_PHONE", ""),
         camera_index=int(os.getenv("CAMERA_INDEX", "0")),
         inference_width=inference_width,
         confidence_threshold=threshold,
-        alert_cooldown_seconds=cooldown,
-    )
-
-
-def rapidapi_headers(api_key: str, host: str) -> dict[str, str]:
-    return {
-        "X-RapidAPI-Key": api_key,
-        "X-RapidAPI-Host": host,
-        "Content-Type": "application/json",
-    }
-
-
-def phone_is_valid(config: Config) -> bool:
-    """Validate the configured supervisor number before opening the webcam."""
-    response = requests.get(
-        config.validation_url,
-        params={"phone": config.supervisor_phone},
-        headers=rapidapi_headers(config.rapidapi_key, config.validation_host),
-        timeout=15,
-    )
-    response.raise_for_status()
-
-    try:
-        payload = response.json()
-    except requests.exceptions.JSONDecodeError as exc:
-        raise ValueError("Phone validation API returned invalid JSON.") from exc
-    if not isinstance(payload, dict):
-        raise ValueError("Phone validation API response must be a JSON object.")
-
-    # Providers commonly wrap the result in a "data" or "result" object.
-    candidates: list[dict[str, Any]] = [payload]
-    for key in ("data", "result"):
-        nested = payload.get(key)
-        if isinstance(nested, dict):
-            candidates.append(nested)
-    for candidate in candidates:
-        for key in ("valid", "is_valid", "isValid"):
-            value = candidate.get(key)
-            if isinstance(value, bool):
-                return value
-
-    raise ValueError(
-        "Phone validation response did not include a boolean valid/is_valid/isValid field; "
-        "adapt phone_is_valid() to the selected RapidAPI provider's response."
     )
 
 
@@ -400,23 +322,6 @@ def draw_scan_zone(frame: Any) -> None:
         1,
         cv2.LINE_AA,
     )
-
-
-def send_alert(config: Config, violations: list[dict[str, Any]]) -> None:
-    payload = {
-        "to": config.supervisor_phone,
-        "message": "PPE safety violation detected. "
-        + json.dumps(violations, separators=(",", ":")),
-        "violations": violations,
-    }
-    response = requests.post(
-        config.alert_url,
-        headers=rapidapi_headers(config.rapidapi_key, config.alert_host),
-        json=payload,
-        timeout=15,
-    )
-    response.raise_for_status()
-    LOGGER.warning("RapidAPI alert accepted (HTTP %s).", response.status_code)
 
 
 def draw_results(
@@ -649,7 +554,6 @@ class InferenceWorker:
         self._thread.join(timeout=2)
 
     def _run(self) -> None:
-        last_alert_at = float("-inf")
         next_presence_scan_at = 0.0
         consecutive_clear_scans = 0
         while not self._stop.is_set():
@@ -736,24 +640,6 @@ class InferenceWorker:
                         )
                     self._phase = "NEXT"
                     self._error = None
-
-                if violations:
-                    if self.config.roboflow_only:
-                        LOGGER.warning(
-                            "Roboflow test detected PPE violation: %s",
-                            json.dumps(violations, separators=(",", ":")),
-                        )
-                    elif (
-                        time.monotonic() - last_alert_at
-                        >= self.config.alert_cooldown_seconds
-                    ):
-                        last_alert_at = time.monotonic()
-                        try:
-                            send_alert(self.config, violations)
-                        except requests.RequestException as exc:
-                            LOGGER.error("Background alert failed: %s", exc)
-                            with self._lock:
-                                self._error = f"Alert failed: {exc}"
             except (requests.RequestException, ValueError, RuntimeError) as exc:
                 LOGGER.error("Background inference failed: %s", exc)
                 with self._lock:
@@ -763,15 +649,6 @@ class InferenceWorker:
 
 
 def run_monitor(config: Config) -> None:
-    if config.roboflow_only:
-        LOGGER.info("Roboflow-only test mode enabled; RapidAPI calls are disabled.")
-    else:
-        # This check deliberately happens before VideoCapture starts the webcam.
-        LOGGER.info("Validating supervisor phone with RapidAPI...")
-        if not phone_is_valid(config):
-            raise ValueError("Supervisor phone number did not pass RapidAPI validation.")
-        LOGGER.info("Supervisor phone validated; starting webcam.")
-
     camera = cv2.VideoCapture(config.camera_index)
     if not camera.isOpened():
         camera.release()
@@ -841,7 +718,7 @@ def run_monitor(config: Config) -> None:
             if error is not None:
                 cv2.putText(
                     frame,
-                    "INFERENCE/ALERT ERROR - see terminal",
+                    "INFERENCE ERROR - see terminal",
                     (10, 28),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.6,

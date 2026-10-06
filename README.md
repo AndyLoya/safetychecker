@@ -1,6 +1,6 @@
 # PPE Safety Arcade
 
-The retro arcade-style monitor checks a browser camera feed for people wearing a helmet and face mask, with check-in results and counters displayed alongside the camera. Frames are sent to Roboflow for inference. When Roboflow-only mode is disabled, the app validates the supervisor phone number on startup and sends violation alerts using the configured RapidAPI endpoints.
+The retro arcade-style monitor checks a browser camera feed for people wearing a helmet and face mask, with check-in results and counters displayed alongside the camera. Frames are sent to Roboflow for inference.
 
 ## Deploy on Render
 
@@ -16,11 +16,10 @@ Render starts the Flask app with Gunicorn and checks `/healthz`. The app expects
 - `ROBOFLOW_API_KEY`: API key for the Roboflow workspace.
 - `ROBOFLOW_WORKSPACE`: Roboflow workspace slug.
 - `PERSON_WORKFLOW_ID` and `PPE_WORKFLOW_ID`: IDs of the person and PPE workflows.
-- With `ROBOFLOW_ONLY=false`, also set `RAPIDAPI_KEY`, `RAPIDAPI_PHONE_VALIDATION_URL`, `RAPIDAPI_PHONE_VALIDATION_HOST`, `RAPIDAPI_ALERT_URL`, `RAPIDAPI_ALERT_HOST`, and `SUPERVISOR_PHONE`.
 
-To run only the Roboflow checks without phone validation and SMS alerts, set `ROBOFLOW_ONLY=true`; the RapidAPI and supervisor values are then not required. Set `CONFIDENCE_THRESHOLD`, `ALERT_COOLDOWN_SECONDS`, and `INFERENCE_WIDTH` only if you want to change their defaults.
+Set `CONFIDENCE_THRESHOLD` and `INFERENCE_WIDTH` only if you want to change their defaults.
 
-The service processes camera frames sent from the user's browser; Render does not access a webcam attached to the user's computer. Browser camera access requires HTTPS, which Render provides for its hosted URL. The hosted service uses HTTP Basic authentication to limit access to the camera station and its inference/alert endpoints.
+The service processes camera frames sent from the user's browser; Render does not access a webcam attached to the user's computer. Browser camera access requires HTTPS, which Render provides for its hosted URL. The hosted service uses HTTP Basic authentication to limit access to the camera station and its inference endpoints.
 
 ## Run locally
 
