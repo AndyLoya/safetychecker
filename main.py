@@ -682,7 +682,7 @@ class InferenceWorker:
             wait_seconds = next_presence_scan_at - time.monotonic()
             if wait_seconds > 0 and self._stop.wait(wait_seconds):
                 break
-            next_presence_scan_at = time.monotonic() + 0.35
+            next_presence_scan_at = time.monotonic() + 1.0
 
             try:
                 person_scan_started_at = time.monotonic()

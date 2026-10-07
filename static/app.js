@@ -171,8 +171,8 @@ async function startCamera() {
     document.querySelector("#camera-label").textContent = "CAMERA ACTIVE";
     cameraMessage.textContent = "Camera is on. Step into the marked area.";
     stopButton.disabled = false;
-    frameTimer = window.setInterval(submitFrame, 500);
-    statusTimer = window.setInterval(refreshStatus, 600);
+    frameTimer = window.setInterval(submitFrame, 1000);
+    statusTimer = window.setInterval(refreshStatus, 1000);
     await submitFrame();
   } catch (error) {
     stopCamera();
