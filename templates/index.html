@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#11140d">
+    <title>PPE Safety Monitor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+  </head>
+  <body>
+    <main class="page">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">PF</div>
+          <div>
+            <p class="eyebrow">ROBOT FLOW // SAFETY SYSTEM</p>
+            <h1>PPE SAFETY MONITOR</h1>
+          </div>
+        </div>
+        <div class="connection">
+          <span id="connection-dot" class="connection-dot"></span>
+          <span id="connection-label">CONNECTING</span>
+        </div>
+      </header>
+
+      <section class="intro">
+        <div>
+          <p class="eyebrow">LIVE CHECK-IN // 01</p>
+          <h2>Ready for your PPE check?</h2>
+          <p class="intro-copy">Stand in the marked zone. Your helmet and face mask will be checked once.</p>
+        </div>
+        <div class="requirement"><span>[01]</span> HELMET <b>+</b> FACE MASK</div>
+      </section>
+
+      <section class="monitor-layout" aria-label="PPE monitoring station">
+        <section class="camera-card">
+          <div class="camera-heading">
+            <span><i class="live-dot"></i> LIVE CAMERA // 01</span>
+            <span id="camera-label">CAMERA OFF</span>
+          </div>
+          <div class="media-stage">
+            <video id="camera" autoplay playsinline muted></video>
+            <canvas id="overlay" aria-hidden="true"></canvas>
+            <div id="camera-placeholder" class="camera-placeholder">
+              <span class="camera-icon" aria-hidden="true">[ + ]</span>
+              <strong>CAMERA STANDBY</strong>
+              <span>START CAMERA TO BEGIN CHECK-IN</span>
+            </div>
+            <div class="scan-guide" aria-hidden="true"><span>PERSON ZONE</span></div>
+          </div>
+          <div class="camera-actions">
+            <button id="start-button" class="button primary" type="button">▶ START CAMERA</button>
+            <button id="stop-button" class="button secondary" type="button" disabled>■ STOP</button>
+            <p id="camera-message" role="status">Camera permission is requested only when you start.</p>
+          </div>
+        </section>
+
+        <aside class="status-card" aria-live="polite">
+          <p class="eyebrow">MISSION CONTROL // 01</p>
+          <div id="result-icon" class="result-icon waiting" aria-hidden="true">•</div>
+          <h2 id="result-status">NEXT PERSON - READY</h2>
+          <p id="result-message" class="result-message">Start the camera and step into the marked area.</p>
+          <div class="stats">
+            <div><strong id="passed-count">0</strong><span>PLAYERS CLEARED</span></div>
+            <div><strong id="failed-count">0</strong><span>TRY AGAIN</span></div>
+          </div>
+          <div class="missed-item">
+            <span class="stat-label">MOST OFTEN MISSING</span>
+            <strong id="most-missed">None yet</strong>
+          </div>
+          <p id="error-message" class="error-message" role="alert" hidden></p>
+        </aside>
+      </section>
+
+      <footer>
+        <span>HELMET + FACE MASK REQUIRED</span>
+        <span>Automated screening is an aid and does not replace required safety procedures.</span>
+      </footer>
+    </main>
+  </body>
+</html>

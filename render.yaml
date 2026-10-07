@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: proyecto-robert-ppe
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements-render.txt
+    startCommand: >-
+      gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120 web:app
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.3
+      - key: ROBOFLOW_API_KEY
+        sync: false
+      - key: ROBOFLOW_WORKSPACE
+        sync: false
+      - key: PERSON_WORKFLOW_ID
+        sync: false
+      - key: PPE_WORKFLOW_ID
+        sync: false
+      - key: ROBOFLOW_ONLY
+        value: "true"
+      - key: CONFIDENCE_THRESHOLD
+        value: "0.4"
+      - key: INFERENCE_WIDTH
+        value: "640"
+      - key: REQUIRE_AUTH
+        value: "true"
+      - key: APP_USERNAME
+        sync: false
+      - key: APP_PASSWORD
+        sync: false
