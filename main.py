@@ -662,6 +662,10 @@ class InferenceWorker:
         last_alert_at = float("-inf")
         next_presence_scan_at = 0.0
         consecutive_clear_scans = 0
+        scan_summary_started_at = time.monotonic()
+        person_scan_count = 0
+        person_detection_count = 0
+        last_person_scan_seconds = 0.0
         while not self._stop.is_set():
             self._new_frame.wait()
             if self._stop.is_set():
@@ -681,17 +685,34 @@ class InferenceWorker:
             next_presence_scan_at = time.monotonic() + 0.35
 
             try:
+                person_scan_started_at = time.monotonic()
                 person_detections = roboflow_workflow_infer(
                     frame,
                     self.config.person_workflow_id,
                     "person",
                     self.config,
                 )
+                last_person_scan_seconds = time.monotonic() - person_scan_started_at
                 people = [
                     detection
                     for detection in person_detections
                     if normalized_label(detection.label) == "person"
                 ]
+                person_scan_count += 1
+                person_detection_count += len(people)
+                if time.monotonic() - scan_summary_started_at >= 15:
+                    LOGGER.info(
+                        "Roboflow person scan summary: workflow=%s scans=%d "
+                        "detections=%d last_request_seconds=%.2f",
+                        self.config.person_workflow_id,
+                        person_scan_count,
+                        person_detection_count,
+                        last_person_scan_seconds,
+                    )
+                    scan_summary_started_at = time.monotonic()
+                    person_scan_count = 0
+                    person_detection_count = 0
+
                 selected_person = select_center_person(
                     people, frame.shape[1], frame.shape[0]
                 )
