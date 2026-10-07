@@ -1,8 +1,0 @@
-.env
-.env.*
-!.env.example
-.venv/
-venv/
-env/
-__pycache__/
-*.py[cod]
