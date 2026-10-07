@@ -250,8 +250,8 @@ def roboflow_workflow_infer(
         raise RuntimeError("Could not encode webcam frame for Roboflow workflow.")
 
     endpoint = (
-        f"{ROBOFLOW_INFERENCE_URL}/"
-        f"{quote(config.roboflow_workspace, safe='')}/workflows/"
+        f"{ROBOFLOW_INFERENCE_URL}/infer/workflows/"
+        f"{quote(config.roboflow_workspace, safe='')}/"
         f"{quote(workflow_id, safe='')}"
     )
     payload = {
